@@ -23,11 +23,12 @@
   - [How to test](#how-to-test)
   - [Dependencies](#dependencies)
     - [Frontend](#frontend)
+      - [Dev Dependencies](#dev-dependencies)
     - [Backend](#backend)
-  - [Further Documentation](#further-documentation)
+    - [R](#r)
+  - [Further documentation](#further-documentation)
     - [Frontend](#frontend-1)
     - [Backend](#backend-1)
-  - [Credits](#credits)
   - [License](#license)
 
 ## Authors
@@ -51,14 +52,14 @@ Researchers and users of remote sensing methods who want to
 * use machine learning for land use classifications
 * work with sentinel-2 data
 * know how to train and apply machine learning models, but are unable or unwilling to focus on understanding and implementing the Area of Applicability
-* work with large-scale mapping/modeling applications, but lack the necessary hardware to perform machine learning and compute the AOA on large datasets
+* work with large-scale mapping/modeling applications, but lack the necessary hardware to perform machine learning
 
 ## How does the software work?
 The user has the possibility to select a model to work with. He can either upload his own model via an upload button or create a new model in order to train it with a selectable machine-learning algorithm. Depending on his choice, only specific parts of the software will be executed.
 
 ### Input
 * Area of interest: The area for which the land use classification and the aoa are to be calculated.
-* Training data or model: If a new model should be created, training data must be uploaded. Otherwise a model is uploaded by the user.
+* Training data or model: If a new model should be created, training data must be uploaded. Otherwise a model has to be uploaoded by the user.
 * Machine learning algorithm and hyperparameters: The new model must be trained. For this, the user can choose between two machine-learning algorithms and, if desired, also pass hyperparameters.
 * Time period: In that period, a search is made for available sentinel-2 images.
 * Bands/ predictors: All bands/predictors to be included in the sentinel images.
@@ -69,7 +70,7 @@ The user has the possibility to select a model to work with. He can either uploa
 #### Generation of a Sentinel-2 satellite image for the area of interest (Sentinel Image (AOI))
 * Based on the user inputs (area of interest (AOI) , time period and cloud cover), the Spatial Temporal Asset Catalog (STAC) is searched for matching Sentinel-2 satellite images.
 * For each Sentinel-2 image found, all bands (except ```B10```) are available for download. We only continue to work with those that have been pre-selected by the user. 
-* If many images are found, we limit ourselves to 400 for further calculation.
+* If many images are found, we limit ourselves to 400 for further calculations.
 * All images (max 400) are now superimposed and for each pixel the median is calculated over all images for each band.
 * This can be helpful to avoid the problem of cloud cover and other interfering factors. In other words, the more images that can be found, the more likely it is to get a good image for model training and LULC classification.
 
@@ -78,9 +79,9 @@ The user has the possibility to select a model to work with. He can either uploa
 * It works analogously to the generation of the Sentinel-2 image for the AOI. Instead of filtering by the AOI, it filters by the geometry of the training polygons. Pixels outside the polygons are set to NA.
 
 ### Part 2: Model training (with R)
-If the user selects to work with his own model, no further model training is needed. If the user selects to create a new model, some additional steps must be performed to obtain valid training data. The generated sentinel image of the training areas (consisting of all selected bands) is now combined with the information from the uploaded training data. Each pixel completely covered by a training polygon is assigned the class of the polygon. As a result we get a dataset of all overlaid pixels, their assigned class and spectral information that we can now use to generate the model. 
+If the user selects to work with his own model, no further model training is needed. If the user selects to create a new model, some additional steps must be performed to obtain valid training data. The generated sentinel image of the training areas (consisting of all selected bands) is now combined with the information from the uploaded training data. Each pixel completely covered by a training polygon is assigned the class of the polygon. As a result we get a dataset of all overlaid pixels, their assigned class and spectral information that we can now use to train the model. 
 
-The user can choose whether he wants to train the model with an random forest or with a support vector machine. For both, hyperparameters can be set and the model is validated with a spatial cross validation method, omitting whole training polygons.
+The user can choose whether he wants to train the model with an random forest algorithm or with a support vector machine. For both, hyperparameters can be set. The models performance is validated with a spatial cross validation method, omitting whole training polygons.
 
 ### Part 3: Prediction and AOA (with R)
 With the help of the trained model and the generated sentinel image for the AOI, a prediction is now calculated. In order to be able to make statements about the applicability of the model especially on unknown areas, the AOA is computed. In the areas where the model is not applicable according to the AOA, random points are generated that are suggested to the user as potential new locations for generating new training data. If this data is acquired in these areas and incorporated into the model, better results could be obtained.
@@ -109,8 +110,6 @@ On a new route, the following three results are visualised on a map:
 It is possible to show and hide the individual results using a checkbox and even to adjust their transparency. The underlying satellite images on which the calculations are based are not displayed on the map but can be downloaded in the same way as the other results via a download button. Please note that the sentinel image of the training areas can only be downloaded if training data has been submitted.
 ![Result page](https://github.com/geo-tech-project/frontend/raw/main/src/assets/results_complete.jpg)
 
-
-
 ## How to test
 To test this app you can proceed as follows:    
 **Backend:**  
@@ -125,8 +124,8 @@ Requirements:
 
 Proceed the following steps.
 1. Make a clone of the backend repository
-2. Navigate into the backend/test folder
-3. Run node testR.js  
+2. Navigate into the ```backend/test``` folder
+3. Run ```node testR.js```  
 
 ## Dependencies
 The following packages are used in this project:
@@ -228,7 +227,7 @@ The following packages are used in this project:
 - [randomForest](https://cran.r-project.org/web/packages/randomForest/index.html): Breiman and Cutler's Random Forests for Classification and Regression
 
 
-## Further Documentation
+## Further documentation
 
 The software can be split into two essential parts. The frontend was developed with the web framework [Angular](https://angular.io).
 The backend is setup as a Node.js application using the [Express](https://expressjs.com/) framework. 
@@ -238,14 +237,20 @@ Documentation of the frontend written in Angular, with HTML, CSS and TypeScript:
 
 ### Backend
 The backend can be devided into three parts. The first part are the R scripts that are used to perform the actual operations, e.g. generating the sentinel images or calculating the AOA. The second part is the API that establishes the connection between the back- and frontend. The last part is the Javascript code that sets up the API and connects to the R-part. Please note that the following links can only be used from the internet network of the University of Münster.
-- [R-Scripts](http://35.80.3.64:8781/R)
-- [API](http://35.80.3.64/documentation)
-- [Javascript](http://35.80.3.64/js)
-
-## Credits
-Credits
+- R-Scripts
+  - [GetSatelliteImages.R](http://35.80.3.64:8781/R/GetSatelliteImages.R)
+  - [CheckTrainingData.R](http://35.80.3.64:8781/R/CheckTrainingData.R)
+  - [ML_AOA.R](http://35.80.3.64:8781/R/ML_AOA.R)
+- [API](http://35.80.3.64:8781/api)
+- [Javascript](http://35.80.3.64:8781/js)
 
 ## License
-Add license text here
+Copyright (C) 2022  Henning Sander, Frederick Bruch, Jakob Danel, Fabian Schumacher, Thalis Goldschmidt
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
