@@ -1,0 +1,15 @@
+version: '2' # specify docker-compose version
+
+# Define the services/containers to be run
+services:
+  frontend: # name of the first service
+    container_name: frontend
+    image: thalisgold/geotech_frontend # specify the directory of the Dockerfile
+    ports:
+      - "8780:8780" # specify port forewarding
+
+  backend: #name of the second service+
+    container_name: backend
+    image: thalisgold/geotech_backend # specify the directory of the Dockerfile
+    ports:
+      - "8781:8781" #specify ports forwarding
