@@ -113,6 +113,9 @@ On a new route, the following three results are visualised on a map:
 * Further train areas
 
 It is possible to show and hide the individual results using a checkbox and even to adjust their transparency. The underlying satellite images on which the calculations are based are not displayed on the map but can be downloaded in the same way as the other results via a download button. Please note that the sentinel image of the training areas can only be downloaded if training data has been submitted.
+
+Unfortunately, the sentinel images do not contain any band names. However, they correspond to the order in which they can be selected. Example: Bands B03, B07, B05 and the addtional index BSI have been selected. \
+Then the order in the Tif would be as follows: 1 = B03, 2 = B05, 3 = B07, 4 = BSI.
 ![Result page](https://github.com/geo-tech-project/frontend/raw/main/src/assets/results_complete.jpg)
 
 ## How to test
