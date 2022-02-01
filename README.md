@@ -1,8 +1,4 @@
-# Estimation Tool for Spatial Prediction Models
-
 ## Table of contents
-- [Estimation Tool for Spatial Prediction Models](#estimation-tool-for-spatial-prediction-models)
-  - [Table of contents](#table-of-contents)
   - [Authors](#authors)
   - [Abstract](#abstract)
   - [Area Of Applicability (AOA)](#area-of-applicability-aoa)
@@ -13,17 +9,18 @@
     - [Part 1: Satellite image generation (with R)](#part-1-satellite-image-generation-with-r)
       - [Generation of a Sentinel-2 satellite image for the area of interest (Sentinel Image (AOI))](#generation-of-a-sentinel-2-satellite-image-for-the-area-of-interest-sentinel-image-aoi)
       - [Generation of a Sentinel-2 satellite image for the areas where the training data is located (Sentinel Image (training area))](#generation-of-a-sentinel-2-satellite-image-for-the-areas-where-the-training-data-is-located-sentinel-image-training-area)
-    - [Part 2: Model training (with R)](#part-2-model-training-with-r)
-    - [Part 3: Prediction and AOA (with R)](#part-3-prediction-and-aoa-with-r)
+    - [Part 2: Calculation of indices (with R)](#part-2-calculation-of-indices-with-r)
+    - [Part 3: Model training (with R)](#part-3-model-training-with-r)
+    - [Part 4: Prediction and AOA (with R)](#part-4-prediction-and-aoa-with-r)
   - [How to install and run the app](#how-to-install-and-run-the-app)
   - [How to use the app](#how-to-use-the-app)
-    - [Main Tool](#main-tool)
+    - [Main tool](#main-tool)
     - [Demo](#demo)
     - [Output of the results](#output-of-the-results)
   - [How to test](#how-to-test)
   - [Dependencies](#dependencies)
     - [Frontend](#frontend)
-      - [Dev Dependencies](#dev-dependencies)
+      - [Dev dependencies](#dev-dependencies)
     - [Backend](#backend)
     - [R](#r)
   - [Further documentation](#further-documentation)
@@ -78,22 +75,28 @@ The user has the possibility to select a model to work with. He can either uploa
 * The generation of a Sentinel-2 satellite image for the areas where the training data is located is only done if the user chose to create a new model and therefore has uploaded training data.
 * It works analogously to the generation of the Sentinel-2 image for the AOI. Instead of filtering by the AOI, it filters by the geometry of the training polygons. Pixels outside the polygons are set to NA.
 
-### Part 2: Model training (with R)
+### Part 2: Calculation of indices (with R)
+Additional indices can only be checked if the necessary bands for the calculations have also been selected. Then they are calculated and also used as predictors for further model training.
+* Available indices: 
+  * NDVI, NDVI_sd_3x3, NDVI_sd_5x5
+  * BSI
+  * BAEI 
+
+### Part 3: Model training (with R)
 If the user selects to work with his own model, no further model training is needed. If the user selects to create a new model, some additional steps must be performed to obtain valid training data. The generated sentinel image of the training areas (consisting of all selected bands) is now combined with the information from the uploaded training data. Each pixel completely covered by a training polygon is assigned the class of the polygon. As a result we get a dataset of all overlaid pixels, their assigned class and spectral information that we can now use to train the model. 
 
 The user can choose whether he wants to train the model with an random forest algorithm or with a support vector machine. For both, hyperparameters can be set. The models performance is validated with a spatial cross validation method, omitting whole training polygons.
 
-### Part 3: Prediction and AOA (with R)
+### Part 4: Prediction and AOA (with R)
 With the help of the trained model and the generated sentinel image for the AOI, a prediction is now calculated. In order to be able to make statements about the applicability of the model especially on unknown areas, the AOA is computed. In the areas where the model is not applicable according to the AOA, random points are generated that are suggested to the user as potential new locations for generating new training data. If this data is acquired in these areas and incorporated into the model, better results could be obtained.
 
 ## How to install and run the app
 
-To make it as simple as possible we used [Docker](https://www.docker.com) for the development. The only thing necessary to run this software, is to download this repository with `git clone --recursive https://github.com/geo-tech-project/geotech.git` and then run `docker-compsoe up --build`in the command line interface. This installs all dependencies for the front- and backend including all [R](https://www.r-project.org) packages. As these packages are not that small, this step could take up to one hour of building time (depending on your hardware). After building, the application will start automatically and you can access the webtool at `http://localhost:8780`. If you have terminated the application and want to restart it another time you can just leave out the `--build` tag of the `docker-compose up` command to start the app again.  
-
+To make it as simple as possible we used [Docker](https://www.docker.com) for the development. The only thing necessary to run this software, is to download this repository with `git clone --recursive https://github.com/geo-tech-project/geotech.git` and then run `sudo docker-compsoe up --build`in the command line interface. This installs all dependencies for the front- and backend including all [R](https://www.r-project.org) packages. As these packages are not that small, this step could take up to one hour of building time (depending on your hardware). After building, the application will start automatically and you can access the webtool at `http://localhost:8780`. If you have terminated the application and want to restart it another time you can just leave out the `--build` tag of the `docker-compose up` command to start the app again.  
 
 ## How to use the app
 
-### Main Tool
+### Main tool
 The main tool is designed in such a way that the user can use it very easily. The user is guided step by step and can only proceed to the next step if the previous one has been carried out correctly. For each step there is an additional info button that displays important information as soon as you hover over it. When everything has been entered successfully, the calculations can be started. After the calculations have been executed and no errors have occurred, the user will be directed to the results page.
 ![Main Tool page](https://github.com/geo-tech-project/frontend/raw/main/src/assets/main-tool.jpg)
 
@@ -115,8 +118,8 @@ To test this app you can proceed as follows:
 **Backend:**  
 With your CLI go into your `backend` folder and run `npm test`.  
 **Frontend:**  
-**R:**  
-The tests are written in the R package [testthat](https://testthat.r-lib.org/). 
+With your CLI go into your `frontend` folder and run `ng test`.\
+**R:** The tests are written in the R package [testthat](https://testthat.r-lib.org/).\
 Requirements:
 - Installation of R
 - Installation all R packages used in this project
@@ -129,6 +132,7 @@ Proceed the following steps.
 
 ## Dependencies
 The following packages are used in this project:
+
 ### Frontend
 
 - [@angular/animations](https://ghub.io/@angular/animations): Angular - animations integration with web-animations
@@ -171,7 +175,7 @@ The following packages are used in this project:
 - [typedoc](https://ghub.io/typedoc): Create api documentation for TypeScript projects.
 - [zone.js](https://ghub.io/zone.js): Zones for JavaScript
 
-#### Dev Dependencies
+#### Dev dependencies
 
 - [@angular-devkit/build-angular](https://ghub.io/@angular-devkit/build-angular): Angular Webpack Build Facade
 - [@angular/cli](https://ghub.io/@angular/cli): CLI tool for Angular
@@ -204,7 +208,6 @@ The following packages are used in this project:
 - [supertest](https://ghub.io/supertest): SuperAgent driven library for testing HTTP servers
 - [swagger-ui-express](https://ghub.io/swagger-ui-express): Swagger UI Express
 
-
 ### R
 - [terra](https://cran.r-project.org/web/packages/terra/index.html): Spatial Data Analysis
 - [rgdal](https://cran.r-project.org/web/packages/rgdal/index.html): Bindings for the 'Geospatial' Data Abstraction Library
@@ -226,7 +229,6 @@ The following packages are used in this project:
 - [rjson](https://cran.r-project.org/web/packages/rjson/index.html): JSON for R
 - [randomForest](https://cran.r-project.org/web/packages/randomForest/index.html): Breiman and Cutler's Random Forests for Classification and Regression
 
-
 ## Further documentation
 
 The software can be split into two essential parts. The frontend was developed with the web framework [Angular](https://angular.io).
@@ -238,9 +240,9 @@ Documentation of the frontend written in Angular, with HTML, CSS and TypeScript:
 ### Backend
 The backend can be devided into three parts. The first part are the R scripts that are used to perform the actual operations, e.g. generating the sentinel images or calculating the AOA. The second part is the API that establishes the connection between the back- and frontend. The last part is the Javascript code that sets up the API and connects to the R-part. Please note that the following links can only be used from the internet network of the University of Münster.
 - R-Scripts
-  - [GetSatelliteImages.R](http://35.80.3.64:8781/R/GetSatelliteImages.R)
-  - [CheckTrainingData.R](http://35.80.3.64:8781/R/CheckTrainingData.R)
-  - [ML_AOA.R](http://35.80.3.64:8781/R/ML_AOA.R)
+  - [GetSatelliteImages.R](http://35.80.3.64:8781/R/GetSatelliteImages.html)
+  - [CheckTrainingData.R](http://35.80.3.64:8781/R/CheckTrainingData.html)
+  - [ML_AOA.R](http://35.80.3.64:8781/R/ML_AOA.html)
 - [API](http://35.80.3.64:8781/api)
 - [Javascript](http://35.80.3.64:8781/js)
 
@@ -252,5 +254,6 @@ This program is free software: you can redistribute it and/or modify it under th
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 
 
